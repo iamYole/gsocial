@@ -1,3 +1,5 @@
 .envrc
 .air.toml
 .vscode/
+.DS_Store
+.cmd/migrate/.DS_Store

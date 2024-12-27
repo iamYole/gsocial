@@ -8,6 +8,8 @@ import (
 	"github.com/iamYole/gsocial/internal/store"
 )
 
+const version = "0.0.1"
+
 func main() {
 	config := config{
 		addr: env.GetString("ADDR", ":8080"),
@@ -17,6 +19,7 @@ func main() {
 			maxIdleConns: env.GetInt("DB_MAX_IDLE_CONN", 10),
 			maxIdleTime:  env.GetString("DB_MAX_IDLE_TIME", "15m"),
 		},
+		env: env.GetString("ENV", "development"),
 	}
 	db, err := db.New(config.db.dsn, config.db.maxIdleTime, config.db.maxOpenConns, config.db.maxIdleConns)
 	if err != nil {
