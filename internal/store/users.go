@@ -17,7 +17,6 @@ func (u *UserStore) Create(ctx context.Context, user *User) error {
 	defer cancel()
 
 	err := u.db.QueryRowContext(ctx, qry,
-		user.ID,
 		user.Username,
 		user.Password,
 		user.Email,

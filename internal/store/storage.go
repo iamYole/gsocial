@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	ErrorNotFound = errors.New("record not found")
+	ErrorNotFound        = errors.New("record not found")
 	QueryTimeoutDuration = 5 * time.Second
 )
 
@@ -24,6 +24,7 @@ type Storage struct {
 	}
 	Comments interface {
 		GetByPostID(context.Context, int64) ([]Comments, error)
+		Create(context.Context, *Comments) error
 	}
 }
 
