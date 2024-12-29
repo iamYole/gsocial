@@ -9,7 +9,7 @@ type CommentStore struct {
 	db *sql.DB
 }
 
-func (s *CommentStore) Create(ctx context.Context, comment *Comments) error{
+func (s *CommentStore) Create(ctx context.Context, comment *Comments) error {
 	query := `
 		INSERT INTO comments (post_id, user_id, content)
 		VALUES ($1, $2, $3)

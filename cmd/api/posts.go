@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"net/http"
 	"strconv"
@@ -53,6 +54,48 @@ func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request
 	}
 }
 
+type CommentPayload struct {
+	Comment string `json:"content" validate:"required,max=150"`
+}
+
+func (app *application) addCommentToPost(w http.ResponseWriter, r *http.Request) {
+	var payLoad CommentPayload
+
+	if err := readJSON(w, r, &payLoad); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	if err := Validate.Struct(payLoad); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	postID := 820
+	userID := 99
+	comment := &store.Comments{
+		PostID:  int64(postID),
+		UserID:  int64(userID),
+		Content: payLoad.Comment,
+	}
+
+	ctx := r.Context()
+
+	if err := app.store.Comments.Create(ctx, comment); err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			app.statusNotFoundError(w, r, err)
+		default:
+			app.internalServerError(w, r, err)
+			return
+		}
+	}
+
+	if err := app.jsonResponse(w, http.StatusCreated, comment); err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+}
 func (app *application) getPostHandler(w http.ResponseWriter, r *http.Request) {
 	post := getPostFromCtx(r)
 

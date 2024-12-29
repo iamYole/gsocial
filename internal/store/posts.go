@@ -34,7 +34,7 @@ func (s *PostStore) Create(ctx context.Context, post *Post) error {
 }
 
 func (s *PostStore) GetByID(ctx context.Context, id int64) (*Post, error) {
-	qry := `select p.id, p.user_id, p.title, p.content, p.tags, p.created_at, p.updated_at, tags, version  
+	qry := `select p.id, p.user_id, p.title, p.content, p.tags, p.created_at, p.updated_at, version  
 			from posts p 
 			where p.id = $1`
 
