@@ -12,6 +12,7 @@ type Post struct {
 	UpdatedAt time.Time  `json:"updated_at"`
 	Version   int        `json:"version"`
 	Comments  []Comments `json:"comments"`
+	User      User       `json:"user"`
 }
 
 type User struct {
@@ -35,4 +36,9 @@ type Follower struct {
 	UserID     int64     `json:"user_id"`
 	FollowerID int64     `json:"follower_id"`
 	CreatedAt  time.Time `json:"created_at"`
+}
+
+type FeedItem struct {
+	Post
+	CommentCount int `json:"comments_count"`
 }

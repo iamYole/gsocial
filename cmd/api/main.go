@@ -14,7 +14,7 @@ func main() {
 	config := config{
 		addr: env.GetString("ADDR", ":8080"),
 		db: dbConfig{
-			dsn:          env.GetString("DB_ADDR", "postgresql://yole:sosodef@localhost:5433/social?sslmode=disable"),
+			dsn:          env.GetString("DB_ADDR", "postgresql://sampleuser:samplepassword@localhost:sampleport/social?sslmode=disable"),
 			maxOpenConns: env.GetInt("DB_MAX_OPEN_CONN", 30),
 			maxIdleConns: env.GetInt("DB_MAX_IDLE_CONN", 10),
 			maxIdleTime:  env.GetString("DB_MAX_IDLE_TIME", "15m"),

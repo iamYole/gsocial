@@ -109,3 +109,50 @@ func (s *PostStore) Update(ctx context.Context, post *Post) error {
 	}
 	return nil
 }
+
+func (s *PostStore) GetUserFeed(ctx context.Context, userID int64, fq PaginatedFeedQuery) ([]FeedItem, error) {
+	qry := `select p.id , p.user_id , p.title , p."content" , p.created_at ,p."version", p.tags , u.username ,COUNT(c.id) as comments_count
+			from posts p 
+			left join comments c on c.post_id  = p.id 
+			left join users u on p.user_id =u.id 
+			join followers f on f.follower_id =p.user_id or p.user_id = $1
+			where
+			 f.user_id = $1 or p.user_id =$1 AND
+			 (p.title ILIKE '%' || $4 || '%' OR p.content ILIKE '%' || $4 || '%') AND
+			(p.tags @> $5 OR $5 = '{}')
+			group by p.id, u.username 
+			order by p.created_at ` + fq.Sort + `
+			limit $2
+			offset $3;`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	rows, err := s.db.QueryContext(ctx, qry, userID, fq.Limit, fq.Offset, fq.Search, pq.Array(fq.Tags))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var feed []FeedItem
+	for rows.Next() {
+		var f FeedItem
+		err := rows.Scan(
+			&f.ID,
+			&f.UserID,
+			&f.Title,
+			&f.Content,
+			&f.CreatedAt,
+			&f.Version,
+			pq.Array(&f.Tags),
+			&f.User.Username,
+			&f.CommentCount,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		feed = append(feed, f)
+	}
+	return feed, nil
+}
