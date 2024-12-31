@@ -1,13 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/iamYole/gsocial/docs"
 	"github.com/iamYole/gsocial/internal/store"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type application struct {
@@ -16,9 +19,10 @@ type application struct {
 }
 
 type config struct {
-	db   dbConfig
-	addr string
-	env  string
+	db     dbConfig
+	addr   string
+	env    string
+	apiURL string
 }
 type dbConfig struct {
 	dsn          string
@@ -29,7 +33,6 @@ type dbConfig struct {
 
 func (app *application) mount() http.Handler {
 	router := chi.NewRouter()
-
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.Logger)
 	router.Use(middleware.RealIP)
@@ -38,6 +41,9 @@ func (app *application) mount() http.Handler {
 
 	router.Route("/v1", func(r chi.Router) {
 		r.Get("/health", app.healthCheckHandler)
+
+		docsURL := fmt.Sprintf("%s/swagger/doc.json", app.config.addr)
+		r.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL(docsURL)))
 
 		// /v1/posts
 		r.Route("/posts", func(r chi.Router) {
@@ -56,7 +62,7 @@ func (app *application) mount() http.Handler {
 		r.Route("/users", func(r chi.Router) {
 			r.Route("/{userID}", func(r chi.Router) {
 				r.Use(app.userConextMiddleware)
-				
+
 				r.Get("/", app.getUserHandler)
 
 				//PUT /v1/users/#/follow | unfollow
@@ -74,6 +80,10 @@ func (app *application) mount() http.Handler {
 }
 
 func (app *application) run(mux http.Handler) error {
+	// Docs
+	docs.SwaggerInfo.Version = version
+	docs.SwaggerInfo.Host = app.config.apiURL
+	docs.SwaggerInfo.BasePath = "/v1"
 
 	srv := &http.Server{
 		Addr:         app.config.addr,

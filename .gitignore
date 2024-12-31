@@ -3,3 +3,5 @@
 .vscode/
 .DS_Store
 .cmd/migrate/.DS_Store
+docs/
+tmp/
