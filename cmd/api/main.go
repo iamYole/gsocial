@@ -1,11 +1,10 @@
 package main
 
 import (
-	"log"
-
 	"github.com/iamYole/gsocial/internal/db"
 	"github.com/iamYole/gsocial/internal/env"
 	"github.com/iamYole/gsocial/internal/store"
+	"go.uber.org/zap"
 )
 
 const version = "0.0.1"
@@ -40,20 +39,27 @@ func main() {
 		},
 		env: env.GetString("ENV", "development"),
 	}
+
+	//Logger
+	logger := zap.Must(zap.NewProduction()).Sugar()
+	defer logger.Sync()
+
+	//Database Connection
 	db, err := db.New(config.db.dsn, config.db.maxIdleTime, config.db.maxOpenConns, config.db.maxIdleConns)
 	if err != nil {
-		log.Panic(err)
+		logger.Fatal(err)
 	}
 	defer db.Close()
-	log.Println("Database connected sucessuflly")
+	logger.Info("Database connected sucessuflly")
 
 	store := store.NewStorage(db)
 
 	app := &application{
 		config: config,
 		store:  store,
+		logger: logger,
 	}
 
 	mux := app.mount()
-	log.Fatal(app.run(mux))
+	logger.Fatal(app.run(mux))
 }
