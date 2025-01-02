@@ -1,6 +1,8 @@
 package main
 
 import (
+	"time"
+
 	"github.com/iamYole/gsocial/internal/db"
 	"github.com/iamYole/gsocial/internal/env"
 	"github.com/iamYole/gsocial/internal/store"
@@ -38,6 +40,9 @@ func main() {
 			maxIdleTime:  env.GetString("DB_MAX_IDLE_TIME", "15m"),
 		},
 		env: env.GetString("ENV", "development"),
+		mail: mailConfig{
+			exp: time.Hour * 24,
+		},
 	}
 
 	//Logger
@@ -47,7 +52,7 @@ func main() {
 	//Database Connection
 	db, err := db.New(config.db.dsn, config.db.maxIdleTime, config.db.maxOpenConns, config.db.maxIdleConns)
 	if err != nil {
-		logger.Fatal(err)
+		logger.Fatal(err.Error())
 	}
 	defer db.Close()
 	logger.Info("Database connected sucessuflly")

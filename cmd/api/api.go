@@ -24,6 +24,10 @@ type config struct {
 	addr   string
 	env    string
 	apiURL string
+	mail   mailConfig
+}
+type mailConfig struct {
+	exp time.Duration
 }
 type dbConfig struct {
 	dsn          string
@@ -60,7 +64,10 @@ func (app *application) mount() http.Handler {
 			})
 		})
 
+		//v1/users
 		r.Route("/users", func(r chi.Router) {
+			r.Put("/activate/{token}", app.activateUserHandler)
+
 			r.Route("/{userID}", func(r chi.Router) {
 				r.Use(app.userConextMiddleware)
 
@@ -74,6 +81,12 @@ func (app *application) mount() http.Handler {
 			r.Group(func(r chi.Router) {
 				r.Get("/feed", app.getUserFeedHandler)
 			})
+		})
+
+		//Public routes
+		//v1/authentication
+		r.Route("/authentication", func(r chi.Router) {
+			r.Post("/user", app.registerUserHandler)
 		})
 	})
 
